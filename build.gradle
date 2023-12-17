@@ -1,0 +1,72 @@
+plugins {
+	id 'fabric-loom' version '1.4-SNAPSHOT'
+	id "com.modrinth.minotaur" version "2.+"
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+	archivesName = project.archives_base_name
+}
+
+repositories {
+	// Add repositories to retrieve artifacts from in here.
+	// You should only use this when depending on other mods because
+	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
+	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
+	// for more information about repositories.
+}
+
+dependencies {
+	// To change the versions see the gradle.properties file
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+	// Fabric API. This is technically optional, but you probably want it anyway.
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+}
+
+processResources {
+	inputs.properties([
+			"mod_version": project.property("mod_version"),
+			"loader_version": project.property("loader_version"),
+			"home_page": project.property("home_page"),
+			"source_link": project.property("source_link"),
+	])
+
+	filesMatching("fabric.mod.json") {
+		expand([
+				"version": project.property("mod_version"),
+				"loader_version": project.property("loader_version"),
+				"home_page": project.property("home_page"),
+				"source_link": project.property("source_link"),
+		])
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 17
+}
+
+java {
+	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+	// if it is present.
+	// If you remove this line, sources will not be generated.
+	withSourcesJar()
+
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
+}
+
+modrinth {
+	token = System.getenv("MODRINTH_TOKEN") // This is the default. Remember to have the MODRINTH_TOKEN environment variable set or else this will fail, or set it to whatever you want - just make sure it stays private!
+	projectId = project.minotaur_projectId // This can be the project ID or the slug. Either will work!
+	versionType = project.minotaur_version_type // This is the default -- can also be `beta` or `alpha`
+	uploadFile = remapJar // With Loom, this MUST be set to `remapJar` instead of `jar`!
+	gameVersions = project.minotaur_version_list.split(",").toList() // Must be an array, even with only one version
+	loaders = ["fabric"] // Must also be an array - no need to specify this if you're using Loom or ForgeGradle
+	syncBodyFrom = rootProject.file("README.md").text
+	changelog = rootProject.file("changelog.md").text
+}
