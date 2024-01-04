@@ -30,6 +30,7 @@ dependencies {
 
 processResources {
 	inputs.properties([
+			"modid": project.property("archives_base_name"),
 			"mod_version": project.property("mod_version"),
 			"loader_version": project.property("loader_version"),
 			"home_page": project.property("home_page"),
@@ -38,6 +39,7 @@ processResources {
 
 	filesMatching("fabric.mod.json") {
 		expand([
+				"modid": project.property("archives_base_name"),
 				"version": project.property("mod_version"),
 				"loader_version": project.property("loader_version"),
 				"home_page": project.property("home_page"),
